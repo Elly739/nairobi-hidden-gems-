@@ -1,6 +1,7 @@
 package com.example.nairobihiddengems.ui.home.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,11 +24,12 @@ import com.example.nairobihiddengems.core.theme.PrimaryPurple
 import com.example.nairobihiddengems.core.theme.SecondaryPink
 
 @Composable
-fun PlaceCard(place: Place, modifier: Modifier = Modifier) {
+fun PlaceCard(place: Place, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)

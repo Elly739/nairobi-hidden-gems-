@@ -67,6 +67,7 @@ fun CustomBottomBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .navigationBarsPadding()
             .height(100.dp),
         contentAlignment = Alignment.BottomCenter
     ) {

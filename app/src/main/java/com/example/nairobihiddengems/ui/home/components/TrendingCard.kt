@@ -1,6 +1,7 @@
 package com.example.nairobihiddengems.ui.home.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,12 +22,13 @@ import com.example.nairobihiddengems.domain.models.Place
 import com.example.nairobihiddengems.core.theme.SecondaryPink
 
 @Composable
-fun TrendingCard(place: Place) {
+fun TrendingCard(place: Place, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .width(280.dp)
             .height(180.dp)
-            .padding(end = 16.dp),
+            .padding(end = 16.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {

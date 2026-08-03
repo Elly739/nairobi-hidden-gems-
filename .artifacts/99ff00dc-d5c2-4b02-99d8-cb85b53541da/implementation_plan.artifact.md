@@ -1,60 +1,38 @@
-# Implementation Plan - Nairobi Hidden Gems UI Refinement (Vision Alignment)
+# Implementation Plan - UI Layout Fix & Interaction Logic
 
-This plan focuses on refining the Android app's UI to align with the "Gen Z aesthetic" vision provided in the reference images. We will move beyond the basic skeletons to implement rich, functional screens for discovery, collections, and contributions.
+This plan addresses the visibility issues with the bottom navigation bar and defines the interaction flow for "Hidden Gems" cards.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Central "+" Button**: The reference images show a prominent "+" button in the center of the bottom navigation. I will implement this as a primary action that navigates to the "Drop a Hidden Gem" screen.
-> **Glassmorphism/Blur**: Some elements (like the bottom bar) appear to have a soft blur/translucency. I will use `Modifier.background` with alpha and `Modifier.blur` (Android 12+) where possible, but prioritize performance on older devices.
-> **Unsplash Integration**: The "Add Gem" screen mentions searching Unsplash. For this sprint, I will implement the UI for this, but the actual API integration will be part of the "Services" phase (Sprint 2).
+> **Details Screen**: When you click a gem, I will implement a transition to a **Place Details** screen. This screen will show larger images, the full description, and options to **Rate**, **Comment**, and **Get Directions**.
+> **Navigation Bar Fix**: I will add `navigationBarsPadding()` to the custom bottom bar to ensure it sits above the system navigation pill/buttons and is fully visible on all devices.
 
 ## Proposed Changes
 
-### 1. UI Refinement: Home Screen
-- **Header**: "Nairobi Hidden Gems" with a notification bell.
-- **Trending Now**: Horizontal scroll section with "Most saved this week" subtitle.
-- **Search & Filters**:
-    - "Search gems..." bar with icon.
-    - "Filter by Vibe" horizontal list of `FilterChip`s (Cafe, Sunset, Study, etc.).
-- **Gems Grid**: Two-column `LazyVerticalGrid` of `PlaceCard`s.
-- **PlaceCard Updates**:
-    - Image overlays for category badges (e.g., "🌙 night").
-    - Translucent overlays for area and rating.
-    - Bold, high-contrast typography.
+### 1. Fix: Bottom Navigation Visibility
+- **File**: [`MainScreen.kt`](file:///C:/Users/Okatho/AndroidStudioProjects/NairobiHiddenGems/app/src/main/java/com/example/nairobihiddengems/ui/MainScreen.kt)
+- **Change**: Add `Modifier.navigationBarsPadding()` to the `CustomBottomBar` container. This will push the entire navigation bar up so it's not hidden by the Android system navigation area.
 
-### 2. NEW: Saved / Collections Screen
-- **Header**: "My Collections" with a "+ New" button.
-- **Collections Grid**: Grid showing named collections (e.g., "Weekend Date Spots") with a preview image and spot count.
+### 2. Feature: Place Details Interaction
+- **Interaction**: Clicking any `PlaceCard` in the Home feed or Trending section will navigate to a new `DetailsScreen`.
+- **New Screen**: `PlaceDetailScreen.kt` [NEW]
+    - **Header**: Large image with a "back" button and "save" toggle.
+    - **Info**: Name, category, location, and rating.
+    - **Community Section**:
+        - A "Rate this Gem" interactive star section.
+        - A "Reviews" section with placeholders for comments.
+    - **Actions**: "Get Directions" (opens Google Maps) and "Share" buttons.
 
-### 3. NEW: Add Gem Screen
-- **Form UI**:
-    - "Choose Image" toggle (Search vs Upload).
-    - Input fields with placeholder text (e.g., "e.g. Java House Westlands Roof").
-    - Dropdowns for Area and Category.
-    - Custom rating inputs for "Aesthetic", "Chill", and "Crowd".
-- **Action**: "Post Gem" gradient button.
-
-### 4. NEW: Profile Screen
-- **Hero Section**: Large avatar with a gradient background/cover photo area.
-- **Stats Row**: "Drops", "Saved", "Followers" counts.
-- **Content Tabs**: "Posted" and "Saved" toggle buttons with a grid view below.
-
-### 5. Navigation Shell Refinement
-- **Custom BottomBar**: Implement a `NavigationBar` that accommodates the large central "+" button.
-- **Themes & Styling**:
-    - Ensure a "Dark Mode first" aesthetic as per the images.
-    - Refine `Color.kt` to include the specific purples and dark greys shown.
+### 3. Navigation Updates
+- **Routes**: Add `object Details : Screen("details/{placeId}")` to `Screen.kt`.
+- **Graph**: Update `AppNavGraph.kt` to include the details route and pass the `placeId`.
 
 ---
 
 ## Verification Plan
 
-### Automated Tests
-- Snapshot/Screenshot tests (if infrastructure exists) to compare UI against mocks.
-- Navigation tests to ensure the "+" button correctly opens the "Add Gem" screen.
-
 ### Manual Verification
-- Verify the scrolling behavior of the "Trending Now" and "Vibe Filters" sections.
-- Test form validation on the "Add Gem" screen.
-- Check the visual layout on different screen sizes (phone/foldable).
+1. **Nav Visibility**: Verify that Home, Saved, and Profile icons are fully visible on the emulator.
+2. **Interaction**: Click on "The Alchemist" card and confirm it opens the new Details screen.
+3. **Back Stack**: Use the back button on the Details screen to return to the Home feed.

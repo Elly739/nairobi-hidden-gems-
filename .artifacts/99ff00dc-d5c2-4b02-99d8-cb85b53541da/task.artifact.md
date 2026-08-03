@@ -1,10 +1,9 @@
-# UI Refinement - Tasks
+# UI Layout Fix & Details Interaction - Tasks
 
-- `[x]` Refine `Color.kt` and `Theme.kt` for the "Nairobi aesthetic"
-- `[x]` Implement Custom Bottom Navigation with central `+` button
-- `[x]` Refine `HomeScreen.kt`: Header, Trending, Search, Vibe Filters
-- `[x]` Update `PlaceCard.kt` with category badges and better styling
-- `[x]` Create `AddGemScreen.kt` with the contribution form
-- `[x]` Implement `SavedScreen.kt` with Collections grid
-- `[x]` Refine `ProfileScreen.kt` with stats and tabs
-- `[x]` Update `AppNavGraph.kt` and `MainScreen.kt` to link everything
+- `[x]` Fix Bottom Navigation visibility (add `navigationBarsPadding`)
+- `[x]` Update `Screen.kt` with Details route
+- `[x]` Implement `PlaceDetailScreen.kt` skeleton
+- `[x]` Update `AppNavGraph.kt` to include Details route
+- `[x]` Update `PlaceCard.kt` and `TrendingCard.kt` with click listeners
+- `[x]` Link Home Screen cards to Details Screen
+- `[x]` Verify navigation and layout on emulator

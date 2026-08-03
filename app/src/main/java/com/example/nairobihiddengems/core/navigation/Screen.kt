@@ -19,6 +19,7 @@ sealed class Screen(
     object Add : Screen("add", "Add", Icons.Default.Add)
     object Saved : Screen("saved", "Saved", Icons.Default.Folder)
     object Profile : Screen("profile", "Profile", Icons.Default.Person)
+    object Details : Screen("details/{placeId}")
 
     companion object {
         val bottomNavItems = listOf(Home, Saved, Profile)

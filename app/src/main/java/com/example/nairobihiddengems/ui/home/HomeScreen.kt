@@ -30,7 +30,7 @@ import com.example.nairobihiddengems.ui.home.components.TrendingCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onPlaceClick: (String) -> Unit) {
     val mockPlaces = remember {
         listOf(
             Place(
@@ -128,7 +128,10 @@ fun HomeScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyRow {
                     items(mockPlaces.reversed()) { place ->
-                        TrendingCard(place = place)
+                        TrendingCard(
+                            place = place,
+                            onClick = { onPlaceClick(place.id) }
+                        )
                     }
                 }
             }
@@ -191,6 +194,7 @@ fun HomeScreen() {
                 rowPlaces.forEach { place ->
                     PlaceCard(
                         place = place,
+                        onClick = { onPlaceClick(place.id) },
                         modifier = Modifier.weight(1f)
                     )
                 }

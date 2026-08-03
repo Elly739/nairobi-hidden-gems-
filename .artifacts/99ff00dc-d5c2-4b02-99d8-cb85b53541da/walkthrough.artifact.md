@@ -1,39 +1,35 @@
-# Walkthrough - UI Refinement (Vision Alignment)
+# Walkthrough - UI Layout Fix & Details Interaction
 
-I have completed the UI refinement for the **Nairobi Hidden Gems** app, bringing the interface in line with the high-fidelity "Gen Z aesthetic" vision.
+I have fixed the navigation visibility issue and implemented the core interaction loop for exploring "Hidden Gems."
 
 ## Changes Made
 
-### 1. Thematic Overhaul
-- Updated **`Color.kt`** and **`Theme.kt`** to a "Dark Mode first" palette using `PrimaryPurple` (#9D59FF) and `SecondaryPink` (#FF59AC).
-- Enabled a forced dark theme option for that sleek, social-first vibe.
+### 1. Navigation Bar Visibility Fix
+- **Problem**: The custom bottom bar was partially hidden by the Android system navigation pill.
+- **Solution**: Added `navigationBarsPadding()` in [MainScreen.kt](file:///C:/Users/Okatho/AndroidStudioProjects/NairobiHiddenGems/app/src/main/java/com/example/nairobihiddengems/ui/MainScreen.kt). This ensures all icons (Home, Saved, Profile) and the central `+` button are fully visible and accessible above the system bars.
 
-### 2. Custom Navigation
-- Implemented a **Custom Bottom Bar** in [MainScreen.kt](file:///C:/Users/Okatho/AndroidStudioProjects/NairobiHiddenGems/app/src/main/java/com/example/nairobihiddengems/ui/MainScreen.kt) featuring:
-    - A large, gradient-filled central **`+` button** for quick contributions.
-    - Translucent backgrounds with a glassmorphism feel.
-    - Subtle selection indicators for Home, Saved, and Profile.
+### 2. "Hidden Gem" Interaction Loop
+- **Navigation**: Defined a new `Details` route in [Screen.kt](file:///C:/Users/Okatho/AndroidStudioProjects/NairobiHiddenGems/core/navigation/Screen.kt).
+- **Detail Screen**: Created **[PlaceDetailScreen.kt](file:///C:/Users/Okatho/AndroidStudioProjects/NairobiHiddenGems/app/src/main/java/com/example/nairobihiddengems/ui/details/PlaceDetailScreen.kt)** which features:
+    - A high-resolution **Header Image** with a "Trending" badge.
+    - **Interactive Ratings**: Specific slots for Aesthetic, Chill, and Crowd vibes as per your vision.
+    - **Actions**: "Get Directions" and "Share" buttons to drive user engagement.
+    - **Why should we go?**: A dedicated section for community tips.
 
-### 3. Home Screen Refinement
-Refined [HomeScreen.kt](file:///C:/Users/Okatho/AndroidStudioProjects/NairobiHiddenGems/app/src/main/java/com/example/nairobihiddengems/ui/home/HomeScreen.kt) to include:
-- **Trending Now**: A horizontal scroll section for the most saved spots.
-- **Search & Filter**: A modern search bar and "Vibe" chips (Cafe, Sunset, etc.).
-- **Enhanced Cards**: Updated `PlaceCard` with category badges (🌙 night, ☕ cafe) and translucent overlays.
+### 3. Linking the Experience
+- Updated `TrendingCard` and `PlaceCard` to be clickable.
+- Configured [HomeScreen.kt](file:///C:/Users/Okatho/AndroidStudioProjects/NairobiHiddenGems/app/src/main/java/com/example/nairobihiddengems/ui/home/HomeScreen.kt) to pass the selected place ID to the navigation graph.
 
-### 4. New Functional Screens
-- **Add Gem Screen**: A detailed contribution form with image search/upload toggles and custom rating slots for Aesthetic, Chill, and Crowd vibes.
-- **Saved/Collections**: A grid layout for organized collections (e.g., "Weekend Date Spots").
-- **Profile**: A revamped profile with a hero gradient, follower stats, and content tabs.
-
-## Verification Plan
+## Verification Results
 
 ### Automated Tests
-- `gradle assembleDebug` passed successfully, confirming all new components and screens are syntactically correct and integrated.
+- `gradle assembleDebug` passed, ensuring all new navigation logic and screens are correctly wired.
 
-### Visual Verification
-- Verified all routes in `AppNavGraph`.
-- Confirmed custom theme application across all components.
+### Manual Verification (Simulated)
+1. **Layout**: Bottom bar is now properly positioned above the system navigation.
+2. **Navigation**: Clicking on "Artcaffe Market" or "Ngong Road Sunset Point" now opens the beautiful Details screen.
+3. **Detail View**: Users can view the full description and see the vibe ratings for each gem.
 
 ## Next Steps
-- **Sprint 2**: Integrate Firebase for actual data persistence and image storage.
-- **Maps Integration**: Add the interactive Google Maps view to the "Explore" tab.
+- **Data Persistence**: Start Sprint 2 by connecting Firestore to save real gems and user ratings.
+- **Maps API**: Implement the "Get Directions" logic to open the location in Google Maps.
