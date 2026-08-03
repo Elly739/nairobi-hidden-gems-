@@ -1,51 +1,60 @@
-# Implementation Plan - Nairobi Hidden Gems (Sprint 1: Foundation Completion)
+# Implementation Plan - Nairobi Hidden Gems UI Refinement (Vision Alignment)
 
-This plan outlines the foundational setup for the Nairobi Hidden Gems Android app, focusing on architecture, navigation, and core UI shell using local mock data.
+This plan focuses on refining the Android app's UI to align with the "Gen Z aesthetic" vision provided in the reference images. We will move beyond the basic skeletons to implement rich, functional screens for discovery, collections, and contributions.
 
 ## User Review Required
 
-> [!NOTE]
-> **Hilt Integration**: Adding Hilt now to avoid future refactoring. This requires adding the Hilt Gradle plugin and KSP (Kotlin Symbol Processing).
-> **Mock Data**: Sprint 1 will use local mock data for "Places" to validate the UI flow before integrating Firebase in Sprint 2.
+> [!IMPORTANT]
+> **Central "+" Button**: The reference images show a prominent "+" button in the center of the bottom navigation. I will implement this as a primary action that navigates to the "Drop a Hidden Gem" screen.
+> **Glassmorphism/Blur**: Some elements (like the bottom bar) appear to have a soft blur/translucency. I will use `Modifier.background` with alpha and `Modifier.blur` (Android 12+) where possible, but prioritize performance on older devices.
+> **Unsplash Integration**: The "Add Gem" screen mentions searching Unsplash. For this sprint, I will implement the UI for this, but the actual API integration will be part of the "Services" phase (Sprint 2).
 
 ## Proposed Changes
 
-### 1. Build Configuration & Dependencies
-Update `libs.versions.toml` and `app/build.gradle.kts` to include:
-- **Navigation**: `androidx.navigation:navigation-compose`
-- **ViewModel**: `androidx.lifecycle:lifecycle-viewmodel-compose`
-- **Image Loading**: `io.coil-kt:coil-compose`
-- **Dependency Injection (Hilt)**:
-    - `com.google.dagger:hilt-android`
-    - `androidx.hilt:hilt-navigation-compose`
-    - Hilt Gradle Plugin & KSP.
+### 1. UI Refinement: Home Screen
+- **Header**: "Nairobi Hidden Gems" with a notification bell.
+- **Trending Now**: Horizontal scroll section with "Most saved this week" subtitle.
+- **Search & Filters**:
+    - "Search gems..." bar with icon.
+    - "Filter by Vibe" horizontal list of `FilterChip`s (Cafe, Sunset, Study, etc.).
+- **Gems Grid**: Two-column `LazyVerticalGrid` of `PlaceCard`s.
+- **PlaceCard Updates**:
+    - Image overlays for category badges (e.g., "🌙 night").
+    - Translucent overlays for area and rating.
+    - Bold, high-contrast typography.
 
-### 2. Package Architecture
-Refactor to the following structure under `com.example.nairobihiddengems`:
-- `core/`: `navigation`, `theme`, `utils`.
-- `data/`: `models`, `repository`, `remote`, `local`.
-- `domain/`: `models`, `repository`, `usecases`.
-- `ui/`: `splash`, `home`, `explore`, `details`, `profile`.
+### 2. NEW: Saved / Collections Screen
+- **Header**: "My Collections" with a "+ New" button.
+- **Collections Grid**: Grid showing named collections (e.g., "Weekend Date Spots") with a preview image and spot count.
 
-### 3. Navigation Architecture
-- **Routes**: Define `Screen` sealed class (Splash, Home, Explore, Saved, Profile).
-- **NavGraph**: Implement `AppNavGraph.kt` to manage app-wide transitions.
-- **Main Shell**: Create a `MainScreen` wrapper with `Scaffold` and `BottomNavigationBar`.
+### 3. NEW: Add Gem Screen
+- **Form UI**:
+    - "Choose Image" toggle (Search vs Upload).
+    - Input fields with placeholder text (e.g., "e.g. Java House Westlands Roof").
+    - Dropdowns for Area and Category.
+    - Custom rating inputs for "Aesthetic", "Chill", and "Crowd".
+- **Action**: "Post Gem" gradient button.
 
-### 4. Core UI Skeletons
-- **Splash Screen**: Branded landing page with logo and transition logic.
-- **Home Screen**: `LazyColumn` displaying mock `Place` cards (e.g., The Alchemist, Karura Forest).
-- **Bottom Navigation**: Functional switching between Home, Explore, and Profile placeholders.
+### 4. NEW: Profile Screen
+- **Hero Section**: Large avatar with a gradient background/cover photo area.
+- **Stats Row**: "Drops", "Saved", "Followers" counts.
+- **Content Tabs**: "Posted" and "Saved" toggle buttons with a grid view below.
+
+### 5. Navigation Shell Refinement
+- **Custom BottomBar**: Implement a `NavigationBar` that accommodates the large central "+" button.
+- **Themes & Styling**:
+    - Ensure a "Dark Mode first" aesthetic as per the images.
+    - Refine `Color.kt` to include the specific purples and dark greys shown.
 
 ---
 
 ## Verification Plan
 
 ### Automated Tests
-- Ensure the project builds successfully with Hilt and KSP.
-- Basic navigation test to verify route transitions.
+- Snapshot/Screenshot tests (if infrastructure exists) to compare UI against mocks.
+- Navigation tests to ensure the "+" button correctly opens the "Add Gem" screen.
 
 ### Manual Verification
-- App launch -> Splash (1.5s delay) -> Home.
-- Clicking Bottom Navigation items switches screens correctly.
-- Verify mock data renders in the Home feed cards.
+- Verify the scrolling behavior of the "Trending Now" and "Vibe Filters" sections.
+- Test form validation on the "Add Gem" screen.
+- Check the visual layout on different screen sizes (phone/foldable).

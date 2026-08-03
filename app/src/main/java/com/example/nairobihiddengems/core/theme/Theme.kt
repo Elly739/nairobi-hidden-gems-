@@ -12,43 +12,48 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryColor,
-    secondary = SecondaryColor,
-    tertiary = TertiaryColor,
-    background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E),
+    primary = PrimaryPurple,
+    secondary = SecondaryPink,
+    tertiary = AccentGold,
+    background = DarkBackground,
+    surface = DarkSurface,
     onPrimary = Color.White,
-    onSecondary = Color.Black,
+    onSecondary = Color.White,
     onTertiary = Color.Black,
-    onBackground = Color.White,
-    onSurface = Color.White
+    onBackground = SoftWhite,
+    onSurface = SoftWhite,
+    surfaceVariant = DarkSurfaceVariant
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = PrimaryColor,
-    secondary = SecondaryColor,
-    tertiary = TertiaryColor,
-    background = SoftCream,
+    primary = PrimaryPurple,
+    secondary = SecondaryPink,
+    tertiary = AccentGold,
+    background = Color(0xFFF5F5F7),
     surface = Color.White,
     onPrimary = Color.White,
     onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = EarthyGrey,
-    onSurface = EarthyGrey
+    onTertiary = Color.Black,
+    onBackground = DarkBackground,
+    onSurface = DarkBackground
 )
 
 @Composable
 fun NairobiHiddenGemsTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Disabled for brand consistency
+    // Always use dark mode for the specific "Hidden Gems" vibe if preferred, 
+    // but allowing system override for accessibility.
+    forceDark: Boolean = true, 
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val isDark = if (forceDark) true else darkTheme
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
+        isDark -> DarkColorScheme
         else -> LightColorScheme
     }
 

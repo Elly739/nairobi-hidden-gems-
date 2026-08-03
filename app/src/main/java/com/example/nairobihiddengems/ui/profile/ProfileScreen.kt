@@ -1,15 +1,150 @@
 package com.example.nairobihiddengems.ui.profile
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.example.nairobihiddengems.core.theme.PrimaryPurple
+import com.example.nairobihiddengems.core.theme.SecondaryPink
 
 @Composable
 fun ProfileScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Profile Screen Skeleton")
+    var selectedTab by remember { mutableStateOf("Posted") }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Hero Section
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .background(Brush.verticalGradient(listOf(SecondaryPink, PrimaryPurple)))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .border(4.dp, Color.White, CircleShape)
+                        .background(Color.LightGray)
+                ) {
+                    Text(text = "🐻", fontSize = 50.sp, modifier = Modifier.align(Alignment.Center))
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "@nairobigemhunter",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Curating Nairobi's aesthetic spots 📍✨ | DM for collabs",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Stats row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                ProfileStat("0", "Drops")
+                ProfileStat("0", "Saved")
+                ProfileStat("1.2k", "Followers")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Tabs
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TabButton("Posted", selectedTab == "Posted") { selectedTab = "Posted" }
+                TabButton("Saved", selectedTab == "Saved") { selectedTab = "Saved" }
+                TabButton("Reset", false) { } // Placeholder for Reset button in vision
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Content Grid (Mock)
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(bottom = 100.dp)
+            ) {
+                items(List(4) { it }) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ProfileStat(value: String, label: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = value, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text(text = label, fontSize = 12.sp, color = Color.Gray)
+    }
+}
+
+@Composable
+fun TabButton(text: String, isSelected: Boolean, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .padding(4.dp)
+            .height(40.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.onSurface else Color.Gray
+        ),
+        elevation = if (isSelected) ButtonDefaults.buttonElevation(defaultElevation = 2.dp) else null,
+        shape = RoundedCornerShape(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        Text(text = text, fontSize = 14.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.nairobihiddengems.ui.add.AddGemScreen
 import com.example.nairobihiddengems.ui.explore.ExploreScreen
 import com.example.nairobihiddengems.ui.home.HomeScreen
 import com.example.nairobihiddengems.ui.profile.ProfileScreen
@@ -30,6 +31,9 @@ fun AppNavGraph(
         }
         composable(Screen.Explore.route) {
             ExploreScreen()
+        }
+        composable(Screen.Add.route) {
+            AddGemScreen()
         }
         composable(Screen.Saved.route) {
             SavedScreen()
