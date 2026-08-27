@@ -1,0 +1,66 @@
+# Nairobi Hidden Gems 💎
+
+Nairobi Hidden Gems is a "Dark Mode first" discovery platform designed to help urban explorers find, save, and share aesthetic spots in Nairobi. From quiet study cafes to vibrant rooftop lounges and sunset viewpoints, the app curates the city's best-kept secrets.
+
+## 🚀 Vision & Aesthetic
+The app follows a sleek, translucent, dark-themed aesthetic with vibrant purple and pink accents. It’s built for the modern explorer who values "vibes," aesthetic photography, and community-driven recommendations.
+
+## ✨ Features (Sprint 1 & 2 Completed)
+- **Splash Entry:** Smooth dark-themed transition into the app.
+- **Home Feed:** 
+    - **Trending Now 🔥:** Real-time trending spots based on community saves.
+    - **Search & Filters:** Instant search by name/location and filtering by "Vibe" (Cafe, Sunset, Study, Night).
+    - **Gem Grid:** Two-column visual layout with category badges and ratings.
+- **Authentication:** Fully integrated Firebase Authentication (Email/Password) with persistent sessions.
+- **Cloud Data:** Live Firestore integration for gem discovery with reactive UI updates.
+- **Navigation:** Custom translucent bottom navigation bar with a central "Drop a Gem" action button.
+- **Profiles:** Explorer profiles with stats (Drops, Saved, Followers) and collection management.
+- **Saved Collections:** A dedicated space to organize gems into folders like "Weekend Date Spots" or "Study & Grind."
+
+## 🛠️ Tech Stack
+- **Language:** Kotlin
+- **UI Framework:** Jetpack Compose (Modern, Declarative UI)
+- **Dependency Injection:** Hilt (Dagger)
+- **Asynchronous Flow:** Kotlin Coroutines & StateFlow
+- **Backend:** Firebase (Authentication, Cloud Firestore)
+- **Image Loading:** Coil
+- **Navigation:** Jetpack Navigation Compose
+- **Architecture:** Clean Architecture (Domain, Data, UI layers) with MVVM pattern.
+
+## 📂 Project Structure
+```text
+nairobihiddengems/
+├── core/               # Theme, navigation definitions, and shared components
+├── data/               # Repository implementations (Firebase, Mock)
+├── domain/             # Business logic, models, and repository interfaces
+├── ui/                 # UI components and ViewModels grouped by feature
+│   ├── auth/           # Login & Registration
+│   ├── home/           # Feed & Discovery
+│   ├── details/        # Place details
+│   ├── profile/        # User stats & settings
+│   └── saved/          # Collections & Folder management
+└── di/                 # Hilt Dependency Injection modules
+```
+
+## 🏗️ Getting Started
+1. **Clone the repo:**
+   ```bash
+   git clone https://github.com/Elly739/nairobi-hidden-gems-.git
+   ```
+2. **Firebase Setup:**
+   - Add your `google-services.json` to the `app/` directory.
+   - Enable Email/Password Auth in the Firebase Console.
+   - Set up Cloud Firestore in "Test Mode" or update security rules to allow authenticated access.
+3. **Run the App:**
+   - Open in Android Studio (Ladybug or newer).
+   - Sync Gradle and run on an emulator (API 24+).
+   - Tap "↺ Refresh" in the Home Feed to seed initial data.
+
+## 📅 Roadmap (Sprint 3+)
+- [ ] **Drop a Gem:** Implementation of the contribution form to add new spots.
+- [ ] **Firebase Storage:** Integration for user-uploaded photos.
+- [ ] **Google Maps:** Direct integration for "Get Directions" and map-view exploration.
+- [ ] **Social Features:** Comments, photo reviews, and following other gem hunters.
+
+---
+*Created by Elly739 - Discover the Vibe of Nairobi.*
