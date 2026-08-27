@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,11 +27,7 @@ data class Collection(val name: String, val spots: Int, val imageUrl: String)
 
 @Composable
 fun SavedScreen() {
-    val collections = listOf(
-        Collection("Weekend Date Spots 💖", 2, "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400"),
-        Collection("Study & Grind 📚", 2, "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400"),
-        Collection("Golden Hour 🌅", 1, "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400")
-    )
+    val collections = emptyList<Collection>() // Simulating empty state
 
     Column(
         modifier = Modifier
@@ -60,14 +57,60 @@ fun SavedScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxSize()
+        if (collections.isEmpty()) {
+            EmptySavedState()
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(collections) { collection ->
+                    CollectionCard(collection)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EmptySavedState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(32.dp)
         ) {
-            items(collections) { collection ->
-                CollectionCard(collection)
+            Icon(
+                imageVector = Icons.Default.FavoriteBorder,
+                contentDescription = null,
+                modifier = Modifier.size(80.dp),
+                tint = MaterialTheme.colorScheme.surfaceVariant
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "No saved gems yet.",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Start exploring Nairobi and save your favorite spots here!",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(
+                onClick = { /* Navigate to Home/Explore */ },
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth().height(56.dp)
+            ) {
+                Text("Start Exploring", fontWeight = FontWeight.Bold)
             }
         }
     }

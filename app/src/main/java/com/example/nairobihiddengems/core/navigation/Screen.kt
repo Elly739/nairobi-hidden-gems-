@@ -14,6 +14,8 @@ sealed class Screen(
     val icon: ImageVector? = null
 ) {
     object Splash : Screen("splash")
+    object Login : Screen("login")
+    object Register : Screen("register")
     object Home : Screen("home", "Home", Icons.Default.Home)
     object Explore : Screen("explore", "Explore", Icons.Default.Search)
     object Add : Screen("add", "Add", Icons.Default.Add)

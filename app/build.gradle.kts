@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -10,7 +11,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.nairobihiddengems"
+        applicationId = "com.nairobihiddengems.app"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -47,6 +48,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     
     // Navigation & ViewModel
     implementation(libs.androidx.navigation.compose)
@@ -54,6 +56,11 @@ dependencies {
     
     // Coil (Image Loading)
     implementation(libs.coil.compose)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
     
     // Hilt
     implementation(libs.hilt.android)

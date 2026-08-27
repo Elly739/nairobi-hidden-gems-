@@ -13,7 +13,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,12 +27,25 @@ import coil.compose.AsyncImage
 import com.example.nairobihiddengems.core.theme.PrimaryPurple
 import com.example.nairobihiddengems.core.theme.SecondaryPink
 
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @Composable
-fun PlaceDetailScreen(placeId: String?, onBack: () -> Unit) {
-    // In a real app, we would fetch data based on placeId. 
-    // Using a mock for now.
-    val mockPlaceName = if (placeId == "1") "Kiza Rooftop Lounge" else "The Java House Garden"
-    val mockImageUrl = "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800"
+fun PlaceDetailScreen(
+    placeId: String?,
+    onBack: () -> Unit,
+    viewModel: PlaceDetailViewModel = hiltViewModel()
+) {
+    val place by viewModel.place.collectAsStateWithLifecycle()
+
+    if (place == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = PrimaryPurple)
+        }
+        return
+    }
+
+    val currentPlace = place!!
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
@@ -43,7 +56,7 @@ fun PlaceDetailScreen(placeId: String?, onBack: () -> Unit) {
             // Header Image
             Box(modifier = Modifier.fillMaxWidth().height(350.dp)) {
                 AsyncImage(
-                    model = mockImageUrl,
+                    model = currentPlace.imageUrl,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -103,7 +116,7 @@ fun PlaceDetailScreen(placeId: String?, onBack: () -> Unit) {
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = mockPlaceName,
+                        text = currentPlace.name,
                         style = MaterialTheme.typography.headlineMedium,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
@@ -116,11 +129,11 @@ fun PlaceDetailScreen(placeId: String?, onBack: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.LocationOn, contentDescription = null, tint = SecondaryPink, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Westlands, Nairobi", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+                    Text(text = "${currentPlace.location}, Nairobi", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
                     Spacer(modifier = Modifier.weight(1f))
                     Icon(Icons.Default.Star, contentDescription = null, tint = Color.Yellow, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "4.9", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text(text = currentPlace.rating.toString(), fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -132,7 +145,7 @@ fun PlaceDetailScreen(placeId: String?, onBack: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "This hidden gem offers the best rooftop vibe in the city. Perfectly lit at 5pm for those aesthetic shots. Great for dates or catching up with friends.",
+                    text = currentPlace.description,
                     style = MaterialTheme.typography.bodyLarge,
                     lineHeight = 24.sp,
                     color = Color.Gray

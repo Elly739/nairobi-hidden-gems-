@@ -1,6 +1,7 @@
 package com.example.nairobihiddengems.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -28,36 +29,22 @@ import com.example.nairobihiddengems.ui.components.VibeChip
 import com.example.nairobihiddengems.ui.home.components.PlaceCard
 import com.example.nairobihiddengems.ui.home.components.TrendingCard
 
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onPlaceClick: (String) -> Unit) {
-    val mockPlaces = remember {
-        listOf(
-            Place(
-                "1", "Kiza Rooftop Lounge", "Westlands", "Night", 4.9,
-                "The ultimate rooftop experience in Nairobi.",
-                "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=800&q=80"
-            ),
-            Place(
-                "2", "The Java House Garden", "Kilimani", "Cafe", 4.6,
-                "A serene spot for your morning coffee.",
-                "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80"
-            ),
-            Place(
-                "3", "Ngong Road Sunset Point", "Ngong Road", "Sunset", 4.8,
-                "Best sunset view in the city.",
-                "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80"
-            ),
-            Place(
-                "4", "Artcaffe Market", "Westlands", "Cafe", 4.5,
-                "Study and grind at this aesthetic market cafe.",
-                "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80"
-            )
-        )
-    }
+fun HomeScreen(
+    onPlaceClick: (String) -> Unit,
+    viewModel: HomeViewModel = hiltViewModel()
+) {
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val selectedVibe by viewModel.selectedVibe.collectAsStateWithLifecycle()
+    val trendingPlaces by viewModel.trendingPlaces.collectAsStateWithLifecycle()
+    val filteredPlaces by viewModel.filteredPlaces.collectAsStateWithLifecycle()
+    val isSeeding by viewModel.isSeeding.collectAsStateWithLifecycle()
 
     val vibes = listOf("All Vibes", "☕ Cafe", "🌅 Sunset", "📚 Study", "🌙 Night")
-    var selectedVibe by remember { mutableStateOf("All Vibes") }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -114,11 +101,18 @@ fun HomeScreen(onPlaceClick: (String) -> Unit) {
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
-                        text = "↺ Refresh",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = PrimaryPurple
-                    )
+                    if (isSeeding) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    } else {
+                        Text(
+                            text = "↺ Refresh",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = PrimaryPurple,
+                            modifier = Modifier.clickable { 
+                                viewModel.seedData()
+                            }
+                        )
+                    }
                 }
                 Text(
                     text = "Most saved this week in Nairobi",
@@ -127,7 +121,7 @@ fun HomeScreen(onPlaceClick: (String) -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyRow {
-                    items(mockPlaces.reversed()) { place ->
+                    items(trendingPlaces) { place ->
                         TrendingCard(
                             place = place,
                             onClick = { onPlaceClick(place.id) }
@@ -140,8 +134,8 @@ fun HomeScreen(onPlaceClick: (String) -> Unit) {
         // Search Bar
         item {
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChange(it) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -175,7 +169,7 @@ fun HomeScreen(onPlaceClick: (String) -> Unit) {
                             text = vibe.split(" ").last(),
                             icon = if (vibe.contains(" ")) vibe.split(" ").first() else null,
                             isSelected = selectedVibe == vibe,
-                            onClick = { selectedVibe = vibe }
+                            onClick = { viewModel.onVibeSelect(vibe) }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                     }
@@ -183,23 +177,39 @@ fun HomeScreen(onPlaceClick: (String) -> Unit) {
             }
         }
 
-        // Main Grid (Simulated using item and chunks because LazyColumn cannot nest LazyVerticalGrid directly easily without fixed height)
-        // I will use a simple column of rows to simulate the grid for simplicity in this skeleton
-        items(mockPlaces.chunked(2)) { rowPlaces ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-            ) {
-                rowPlaces.forEach { place ->
-                    PlaceCard(
-                        place = place,
-                        onClick = { onPlaceClick(place.id) },
-                        modifier = Modifier.weight(1f)
+        // Main Grid
+        if (filteredPlaces.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No gems found for \"$searchQuery\"",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Gray
                     )
                 }
-                if (rowPlaces.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
+            }
+        } else {
+            items(filteredPlaces.chunked(2)) { rowPlaces ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                ) {
+                    rowPlaces.forEach { place ->
+                        PlaceCard(
+                            place = place,
+                            onClick = { onPlaceClick(place.id) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    if (rowPlaces.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }

@@ -5,6 +5,8 @@ data class Place(
     val name: String,
     val location: String,
     val category: String,
+    val vibe: List<String>,
+    val saves: Int,
     val rating: Double,
     val description: String,
     val imageUrl: String

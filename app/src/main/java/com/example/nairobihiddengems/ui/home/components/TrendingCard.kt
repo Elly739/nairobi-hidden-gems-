@@ -66,7 +66,7 @@ fun TrendingCard(place: Place, onClick: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "312 saves", // Hardcoded for mockup as per vision
+                        text = "${place.saves} saves",
                         color = Color.White,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold

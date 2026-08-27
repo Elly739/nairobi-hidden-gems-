@@ -32,7 +32,11 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val showBottomBar = currentDestination?.route != Screen.Splash.route
+    val showBottomBar = currentDestination?.route !in listOf(
+        Screen.Splash.route,
+        Screen.Login.route,
+        Screen.Register.route
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
