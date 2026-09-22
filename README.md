@@ -1,5 +1,9 @@
 # Nairobi Hidden Gems 💎
 
+<p align="center">
+  <img src="app/src/main/res/drawable/app_logo.png" width="300" alt="Nairobi Hidden Gems Logo">
+</p>
+
 Nairobi Hidden Gems is a "Dark Mode first" discovery platform designed to help urban explorers find, save, and share aesthetic spots in Nairobi. From quiet study cafes to vibrant rooftop lounges and sunset viewpoints, the app curates the city's best-kept secrets.
 
 ## 🚀 Vision & Aesthetic
