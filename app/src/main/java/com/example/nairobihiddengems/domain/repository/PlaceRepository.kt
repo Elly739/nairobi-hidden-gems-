@@ -16,4 +16,5 @@ interface PlaceRepository {
     suspend fun toggleSavePlace(userId: String, placeId: String, isSaved: Boolean): Result<Unit>
     
     suspend fun addPlace(place: Place)
+    suspend fun uploadPlaceImage(uri: android.net.Uri): Result<String>
 }

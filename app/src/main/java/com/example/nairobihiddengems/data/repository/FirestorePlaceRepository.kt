@@ -6,6 +6,7 @@ import com.example.nairobihiddengems.domain.repository.PlaceRepository
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -16,27 +17,31 @@ import javax.inject.Singleton
 
 @Singleton
 class FirestorePlaceRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val storage: FirebaseStorage
 ) : PlaceRepository {
 
     private val TAG = "FirestoreRepo"
     private val placesCollection = firestore.collection("places")
+    private val storageRef = storage.reference.child("place_images")
 
     override fun getPlaces(): Flow<List<Place>> = callbackFlow {
-        val subscription = placesCollection.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                Log.e(TAG, "Error fetching places: ${error.message}", error)
-                close(error)
-                return@addSnapshotListener
-            }
-            if (snapshot != null) {
-                val places = snapshot.documents.mapNotNull { doc ->
-                    doc.toPlace()
+        val subscription = placesCollection
+            .whereEqualTo("status", "approved")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e(TAG, "Error fetching places: ${error.message}", error)
+                    close(error)
+                    return@addSnapshotListener
                 }
-                Log.d(TAG, "Fetched ${places.size} places")
-                trySend(places)
+                if (snapshot != null) {
+                    val places = snapshot.documents.mapNotNull { doc ->
+                        doc.toPlace()
+                    }
+                    Log.d(TAG, "Fetched ${places.size} approved places")
+                    trySend(places)
+                }
             }
-        }
         awaitClose { subscription.remove() }
     }
 
@@ -180,7 +185,8 @@ class FirestorePlaceRepository @Inject constructor(
                 rating = getDouble("rating") ?: 0.0,
                 description = getString("description") ?: "",
                 imageUrl = getString("imageUrl") ?: "",
-                createdBy = getString("createdBy")
+                createdBy = getString("createdBy"),
+                status = getString("status") ?: "approved"
             )
         } catch (e: Exception) {
             null
@@ -198,7 +204,8 @@ class FirestorePlaceRepository @Inject constructor(
             "rating" to place.rating,
             "description" to place.description,
             "imageUrl" to place.imageUrl,
-            "createdBy" to place.createdBy
+            "createdBy" to place.createdBy,
+            "status" to place.status
         )
         try {
             placesCollection.add(data).await()
@@ -206,6 +213,18 @@ class FirestorePlaceRepository @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error adding place: ${e.message}", e)
             throw e
+        }
+    }
+
+    override suspend fun uploadPlaceImage(uri: android.net.Uri): Result<String> {
+        return try {
+            val fileName = "${System.currentTimeMillis()}_${uri.lastPathSegment}"
+            val imageRef = storageRef.child(fileName)
+            val uploadTask = imageRef.putFile(uri).await()
+            val downloadUrl = imageRef.downloadUrl.await().toString()
+            Result.success(downloadUrl)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

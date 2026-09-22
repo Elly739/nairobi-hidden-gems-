@@ -42,6 +42,14 @@ class AddGemViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = AddGemUiState.Loading
             
+            val imageUrl = _selectedImageUri.value?.let { uri ->
+                if (uri.scheme == "content" || uri.scheme == "file") {
+                    repository.uploadPlaceImage(uri).getOrNull()
+                } else {
+                    uri.toString()
+                }
+            } ?: "https://images.unsplash.com/photo-1514933651103-005eec06c04b"
+
             val newPlace = Place(
                 id = "", // Firestore will generate
                 name = name,
@@ -51,8 +59,9 @@ class AddGemViewModel @Inject constructor(
                 saves = 0,
                 rating = (aesthetic + chill + crowd) / 3.0,
                 description = description,
-                imageUrl = _selectedImageUri.value?.toString() ?: "https://images.unsplash.com/photo-1514933651103-005eec06c04b",
-                createdBy = user.uid
+                imageUrl = imageUrl,
+                createdBy = user.uid,
+                status = "pending" // New gems must be approved
             )
 
             try {

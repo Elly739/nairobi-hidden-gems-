@@ -78,4 +78,8 @@ class MockPlaceRepository @Inject constructor() : PlaceRepository {
     override suspend fun addPlace(place: Place) {
         // No-op for mock
     }
+
+    override suspend fun uploadPlaceImage(uri: android.net.Uri): Result<String> {
+        return Result.success("https://images.unsplash.com/photo-1514933651103-005eec06c04b")
+    }
 }
