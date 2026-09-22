@@ -29,6 +29,16 @@ class HomeViewModel @Inject constructor(
     private val _isSeeding = MutableStateFlow(false)
     val isSeeding = _isSeeding.asStateFlow()
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val savedPlaceIds: StateFlow<Set<String>> = authRepository.currentUser
+        .flatMapLatest { user ->
+            if (user != null) {
+                repository.getSavedPlaces(user.uid).map { it.map { p -> p.id }.toSet() }
+            } else {
+                flowOf(emptySet())
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
     val trendingPlaces: StateFlow<List<Place>> = repository.getTrendingPlaces()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -49,6 +59,14 @@ class HomeViewModel @Inject constructor(
 
     fun onVibeSelect(vibe: String) {
         _selectedVibe.value = vibe
+    }
+
+    fun toggleSave(placeId: String) {
+        val user = authRepository.currentUser.value ?: return
+        val isCurrentlySaved = savedPlaceIds.value.contains(placeId)
+        viewModelScope.launch {
+            repository.toggleSavePlace(user.uid, placeId, !isCurrentlySaved)
+        }
     }
 
     fun seedData() {

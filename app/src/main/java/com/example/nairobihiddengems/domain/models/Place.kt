@@ -9,5 +9,6 @@ data class Place(
     val saves: Int,
     val rating: Double,
     val description: String,
-    val imageUrl: String
+    val imageUrl: String,
+    val createdBy: String? = null
 )

@@ -10,4 +10,5 @@ interface AuthRepository {
     suspend fun signUp(email: String, password: String): Result<FirebaseUser?>
     fun signOut()
     fun isUserAuthenticated(): Boolean
+    suspend fun updateProfile(displayName: String): Result<Unit>
 }

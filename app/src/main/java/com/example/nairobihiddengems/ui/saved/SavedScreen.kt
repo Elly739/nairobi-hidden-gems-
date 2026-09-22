@@ -22,12 +22,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.nairobihiddengems.core.theme.PrimaryPurple
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.nairobihiddengems.ui.home.components.PlaceCard
 
 data class Collection(val name: String, val spots: Int, val imageUrl: String)
 
 @Composable
-fun SavedScreen() {
-    val collections = emptyList<Collection>() // Simulating empty state
+fun SavedScreen(
+    viewModel: SavedViewModel = hiltViewModel(),
+    onPlaceClick: (String) -> Unit = {}
+) {
+    val savedPlaces by viewModel.savedPlaces.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -40,7 +47,7 @@ fun SavedScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "My Collections 📁",
+                text = "Saved Gems ✨",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -51,23 +58,26 @@ fun SavedScreen() {
             ) {
                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("New", fontSize = 12.sp)
+                Text("New Folder", fontSize = 12.sp)
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        if (collections.isEmpty()) {
+        if (savedPlaces.isEmpty()) {
             EmptySavedState()
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(collections) { collection ->
-                    CollectionCard(collection)
+                items(savedPlaces) { place ->
+                    PlaceCard(
+                        place = place,
+                        onClick = { onPlaceClick(place.id) }
+                    )
                 }
             }
         }

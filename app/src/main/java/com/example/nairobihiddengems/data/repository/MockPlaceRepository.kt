@@ -62,4 +62,20 @@ class MockPlaceRepository @Inject constructor() : PlaceRepository {
             it.vibe.any { vibe -> vibe.contains(query, ignoreCase = true) }
         }
     }
+
+    override fun getPlacesByUser(userId: String): Flow<List<Place>> = flowOf(emptyList())
+
+    override fun getSavedPlaces(userId: String): Flow<List<Place>> = flowOf(emptyList())
+
+    override fun isPlaceSaved(userId: String, placeId: String): Flow<Boolean> = flowOf(false)
+
+    override suspend fun toggleSavePlace(
+        userId: String,
+        placeId: String,
+        isSaved: Boolean
+    ): Result<Unit> = Result.success(Unit)
+
+    override suspend fun addPlace(place: Place) {
+        // No-op for mock
+    }
 }

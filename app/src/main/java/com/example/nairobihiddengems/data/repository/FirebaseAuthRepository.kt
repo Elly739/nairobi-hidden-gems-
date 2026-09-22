@@ -10,6 +10,8 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import com.google.firebase.auth.userProfileChangeRequest
+
 @Singleton
 class FirebaseAuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth
@@ -21,6 +23,21 @@ class FirebaseAuthRepository @Inject constructor(
     init {
         firebaseAuth.addAuthStateListener { auth ->
             _currentUser.value = auth.currentUser
+        }
+    }
+
+    override suspend fun updateProfile(displayName: String): Result<Unit> {
+        return try {
+            val user = firebaseAuth.currentUser ?: throw Exception("User not logged in")
+            val profileUpdates = userProfileChangeRequest {
+                this.displayName = displayName
+            }
+            user.updateProfile(profileUpdates).await()
+            // Force refresh user flow
+            _currentUser.value = firebaseAuth.currentUser
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 

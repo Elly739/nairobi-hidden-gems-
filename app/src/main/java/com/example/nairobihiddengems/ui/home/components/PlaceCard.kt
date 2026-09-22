@@ -23,8 +23,16 @@ import com.example.nairobihiddengems.domain.models.Place
 import com.example.nairobihiddengems.core.theme.PrimaryPurple
 import com.example.nairobihiddengems.core.theme.SecondaryPink
 
+import androidx.compose.material.icons.filled.Favorite
+
 @Composable
-fun PlaceCard(place: Place, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun PlaceCard(
+    place: Place,
+    onClick: () -> Unit,
+    isSaved: Boolean = false,
+    onSaveClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -47,7 +55,7 @@ fun PlaceCard(place: Place, onClick: () -> Unit, modifier: Modifier = Modifier) 
                 
                 // Favorite Button
                 IconButton(
-                    onClick = { },
+                    onClick = onSaveClick,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
@@ -55,9 +63,9 @@ fun PlaceCard(place: Place, onClick: () -> Unit, modifier: Modifier = Modifier) 
                         .background(Color.Black.copy(alpha = 0.3f), CircleShape)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
+                        imageVector = if (isSaved) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Save",
-                        tint = Color.White,
+                        tint = if (isSaved) SecondaryPink else Color.White,
                         modifier = Modifier.size(18.dp)
                     )
                 }

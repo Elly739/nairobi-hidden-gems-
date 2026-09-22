@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Share
@@ -30,13 +31,19 @@ import com.example.nairobihiddengems.core.theme.SecondaryPink
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.filled.StarBorder
+
 @Composable
 fun PlaceDetailScreen(
     placeId: String?,
     onBack: () -> Unit,
     viewModel: PlaceDetailViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val place by viewModel.place.collectAsStateWithLifecycle()
+    val isSaved by viewModel.isSaved.collectAsStateWithLifecycle()
 
     if (place == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -46,6 +53,16 @@ fun PlaceDetailScreen(
     }
 
     val currentPlace = place!!
+
+    fun sharePlace(name: String, location: String) {
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, "Check out this hidden gem in Nairobi: $name in $location! Download Nairobi Hidden Gems to see more.")
+            type = "text/plain"
+        }
+        val shareIntent = Intent.createChooser(sendIntent, null)
+        context.startActivity(shareIntent)
+    }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
@@ -89,10 +106,14 @@ fun PlaceDetailScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                     IconButton(
-                        onClick = { },
+                        onClick = { viewModel.toggleSave() },
                         modifier = Modifier.background(Color.Black.copy(alpha = 0.3f), CircleShape)
                     ) {
-                        Icon(Icons.Default.FavoriteBorder, contentDescription = "Save", tint = Color.White)
+                        Icon(
+                            imageVector = if (isSaved) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Save",
+                            tint = if (isSaved) SecondaryPink else Color.White
+                        )
                     }
                 }
 
@@ -164,9 +185,13 @@ fun PlaceDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    RatingSlot("Aesthetic")
-                    RatingSlot("Chill")
-                    RatingSlot("Crowd")
+                    var aestheticRating by remember { mutableStateOf(4) }
+                    var chillRating by remember { mutableStateOf(4) }
+                    var crowdRating by remember { mutableStateOf(3) }
+
+                    RatingSlot("Aesthetic", aestheticRating) { aestheticRating = it }
+                    RatingSlot("Chill", chillRating) { chillRating = it }
+                    RatingSlot("Crowd", crowdRating) { crowdRating = it }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -185,7 +210,7 @@ fun PlaceDetailScreen(
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     OutlinedButton(
-                        onClick = { },
+                        onClick = { sharePlace(currentPlace.name, currentPlace.location) },
                         modifier = Modifier.size(56.dp),
                         shape = RoundedCornerShape(16.dp),
                         contentPadding = PaddingValues(0.dp)
@@ -201,18 +226,23 @@ fun PlaceDetailScreen(
 }
 
 @Composable
-fun RatingSlot(label: String) {
+fun RatingSlot(label: String, rating: Int, onRatingChange: (Int) -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = label, fontSize = 12.sp, color = Color.Gray)
         Spacer(modifier = Modifier.height(8.dp))
         Row {
-            repeat(5) {
-                Icon(
-                    Icons.Default.Star,
-                    contentDescription = null,
-                    tint = if (it < 4) PrimaryPurple else Color.DarkGray,
-                    modifier = Modifier.size(16.dp)
-                )
+            repeat(5) { index ->
+                IconButton(
+                    onClick = { onRatingChange(index + 1) },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = if (index < rating) Icons.Default.Star else Icons.Default.StarBorder,
+                        contentDescription = null,
+                        tint = if (index < rating) PrimaryPurple else Color.DarkGray,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
         }
     }

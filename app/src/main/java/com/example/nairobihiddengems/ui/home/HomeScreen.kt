@@ -43,6 +43,7 @@ fun HomeScreen(
     val trendingPlaces by viewModel.trendingPlaces.collectAsStateWithLifecycle()
     val filteredPlaces by viewModel.filteredPlaces.collectAsStateWithLifecycle()
     val isSeeding by viewModel.isSeeding.collectAsStateWithLifecycle()
+    val savedPlaceIds by viewModel.savedPlaceIds.collectAsStateWithLifecycle()
 
     val vibes = listOf("All Vibes", "☕ Cafe", "🌅 Sunset", "📚 Study", "🌙 Night")
 
@@ -204,6 +205,8 @@ fun HomeScreen(
                         PlaceCard(
                             place = place,
                             onClick = { onPlaceClick(place.id) },
+                            isSaved = savedPlaceIds.contains(place.id),
+                            onSaveClick = { viewModel.toggleSave(place.id) },
                             modifier = Modifier.weight(1f)
                         )
                     }

@@ -114,11 +114,30 @@ fun RegisterScreen(
                 singleLine = true
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Confirm Password") },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = PrimaryPurple) },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
 
             if (authState is AuthState.Error) {
                 Text(
                     text = (authState as AuthState.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            } else if (password.isNotEmpty() && confirmPassword.isNotEmpty() && password != confirmPassword) {
+                Text(
+                    text = "Passwords do not match",
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -135,7 +154,7 @@ fun RegisterScreen(
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
-                enabled = authState !is AuthState.Loading
+                enabled = authState !is AuthState.Loading && email.isNotEmpty() && password.isNotEmpty() && password == confirmPassword
             ) {
                 if (authState is AuthState.Loading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))

@@ -3,11 +3,13 @@ package com.example.nairobihiddengems.data.repository
 import android.util.Log
 import com.example.nairobihiddengems.domain.models.Place
 import com.example.nairobihiddengems.domain.repository.PlaceRepository
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -78,6 +80,93 @@ class FirestorePlaceRepository @Inject constructor(
         }
     }
 
+    override fun getPlacesByUser(userId: String): Flow<List<Place>> = callbackFlow {
+        val subscription = placesCollection.whereEqualTo("createdBy", userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val places = snapshot.documents.mapNotNull { it.toPlace() }
+                    trySend(places)
+                }
+            }
+        awaitClose { subscription.remove() }
+    }
+
+    override fun getSavedPlaces(userId: String): Flow<List<Place>> = callbackFlow {
+        val subscription = firestore.collection("users").document(userId)
+            .collection("savedGems")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                
+                launch {
+                    val placeIds = snapshot?.documents?.map { it.id } ?: emptyList()
+                    if (placeIds.isEmpty()) {
+                        trySend(emptyList())
+                    } else {
+                        try {
+                            // Batch fetch places (limit 10 per whereIn query)
+                            val places = placeIds.chunked(10).flatMap { ids ->
+                                placesCollection.whereIn(FieldPath.documentId(), ids)
+                                    .get().await().documents.mapNotNull { it.toPlace() }
+                            }
+                            trySend(places)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error fetching saved places details", e)
+                            trySend(emptyList())
+                        }
+                    }
+                }
+            }
+        awaitClose { subscription.remove() }
+    }
+
+    override fun isPlaceSaved(userId: String, placeId: String): Flow<Boolean> = callbackFlow {
+        val subscription = firestore.collection("users").document(userId)
+            .collection("savedGems").document(placeId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                trySend(snapshot?.exists() == true)
+            }
+        awaitClose { subscription.remove() }
+    }
+
+    override suspend fun toggleSavePlace(
+        userId: String,
+        placeId: String,
+        isSaved: Boolean
+    ): Result<Unit> {
+        return try {
+            val userSavedRef = firestore.collection("users").document(userId)
+                .collection("savedGems").document(placeId)
+            val placeRef = placesCollection.document(placeId)
+
+            firestore.runTransaction { transaction ->
+                val placeSnapshot = transaction.get(placeRef)
+                val currentSaves = placeSnapshot.getLong("saves") ?: 0L
+                
+                if (isSaved) {
+                    transaction.set(userSavedRef, mapOf("savedAt" to com.google.firebase.Timestamp.now()))
+                    transaction.update(placeRef, "saves", currentSaves + 1)
+                } else {
+                    transaction.delete(userSavedRef)
+                    transaction.update(placeRef, "saves", (currentSaves - 1).coerceAtLeast(0))
+                }
+            }.await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     // Helper extension to map Firestore document to Place model
     private fun com.google.firebase.firestore.DocumentSnapshot.toPlace(): Place? {
         return try {
@@ -90,7 +179,8 @@ class FirestorePlaceRepository @Inject constructor(
                 saves = getLong("saves")?.toInt() ?: 0,
                 rating = getDouble("rating") ?: 0.0,
                 description = getString("description") ?: "",
-                imageUrl = getString("imageUrl") ?: ""
+                imageUrl = getString("imageUrl") ?: "",
+                createdBy = getString("createdBy")
             )
         } catch (e: Exception) {
             null
@@ -98,7 +188,7 @@ class FirestorePlaceRepository @Inject constructor(
     }
     
     // For seeding data as requested
-    suspend fun addPlace(place: Place) {
+    override suspend fun addPlace(place: Place) {
         val data = hashMapOf(
             "name" to place.name,
             "location" to place.location,
@@ -107,7 +197,8 @@ class FirestorePlaceRepository @Inject constructor(
             "saves" to place.saves,
             "rating" to place.rating,
             "description" to place.description,
-            "imageUrl" to place.imageUrl
+            "imageUrl" to place.imageUrl,
+            "createdBy" to place.createdBy
         )
         try {
             placesCollection.add(data).await()

@@ -1,6 +1,7 @@
 package com.example.nairobihiddengems.ui.add
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,14 +22,45 @@ import androidx.compose.ui.unit.sp
 import com.example.nairobihiddengems.core.theme.PrimaryPurple
 import com.example.nairobihiddengems.core.theme.SecondaryPink
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddGemScreen() {
+fun AddGemScreen(
+    viewModel: AddGemViewModel = hiltViewModel()
+) {
     var placeName by remember { mutableStateOf("") }
     var area by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Café") }
     var description by remember { mutableStateOf("") }
     var isSearchSelected by remember { mutableStateOf(true) }
+    
+    var unsplashQuery by remember { mutableStateOf("") }
+    
+    var aestheticRating by remember { mutableStateOf(4.0) }
+    var chillRating by remember { mutableStateOf(4.0) }
+    var crowdRating by remember { mutableStateOf(4.0) }
+
+    val selectedImageUri by viewModel.selectedImageUri.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        viewModel.onImageSelected(uri)
+    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is AddGemUiState.Success) {
+            placeName = ""
+            area = ""
+            description = ""
+            viewModel.resetState()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -66,7 +98,10 @@ fun AddGemScreen() {
             }
             Spacer(modifier = Modifier.width(16.dp))
             Button(
-                onClick = { isSearchSelected = false },
+                onClick = { 
+                    isSearchSelected = false
+                    imagePickerLauncher.launch("image/*")
+                },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (!isSearchSelected) PrimaryPurple else MaterialTheme.colorScheme.surfaceVariant
@@ -81,20 +116,46 @@ fun AddGemScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = "",
-            onValueChange = {},
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search Unsplash (e.g. 'cafe', 'sunset')...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            shape = RoundedCornerShape(12.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                unfocusedIndicatorColor = Color.Transparent
+        if (isSearchSelected) {
+            OutlinedTextField(
+                value = unsplashQuery,
+                onValueChange = { 
+                    unsplashQuery = it
+                    if (it.length > 3) {
+                        // Simulate Unsplash selection
+                        viewModel.onImageSelected(android.net.Uri.parse("https://source.unsplash.com/featured/?nairobi,${it}"))
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Search Unsplash (e.g. 'cafe', 'sunset')...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                shape = RoundedCornerShape(12.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    unfocusedIndicatorColor = Color.Transparent
+                )
             )
-        )
+        }
+
+        if (selectedImageUri != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.DarkGray)
+            ) {
+                coil.compose.AsyncImage(
+                    model = selectedImageUri,
+                    contentDescription = "Selected",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -147,15 +208,28 @@ fun AddGemScreen() {
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            RatingInput("Aesthetic", "4.5")
-            RatingInput("Chill", "4.0")
-            RatingInput("Crowd", "3.5")
+            RatingInput("Aesthetic", aestheticRating.toString()) { aestheticRating = it.toDouble() }
+            RatingInput("Chill", chillRating.toString()) { chillRating = it.toDouble() }
+            RatingInput("Crowd", crowdRating.toString()) { crowdRating = it.toDouble() }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        if (uiState is AddGemUiState.Error) {
+            Text(
+                text = (uiState as AddGemUiState.Error).message,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
         Button(
-            onClick = { },
+            onClick = { 
+                viewModel.postGem(
+                    placeName, area, category, description, 
+                    aestheticRating, chillRating, crowdRating
+                )
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
@@ -163,9 +237,14 @@ fun AddGemScreen() {
                     Brush.horizontalGradient(listOf(PrimaryPurple, SecondaryPink)),
                     RoundedCornerShape(16.dp)
                 ),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+            enabled = uiState !is AddGemUiState.Loading && placeName.isNotEmpty() && area.isNotEmpty()
         ) {
-            Text("🚀 Post Gem", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            if (uiState is AddGemUiState.Loading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Text("🚀 Post Gem", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            }
         }
         
         Spacer(modifier = Modifier.height(100.dp))
@@ -183,18 +262,27 @@ fun InputFieldLabel(text: String) {
 }
 
 @Composable
-fun RatingInput(label: String, value: String) {
+fun RatingInput(label: String, value: String, onValueChange: (Float) -> Unit) {
+    var rating by remember { mutableStateOf(value.toFloat()) }
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = label, fontSize = 12.sp, color = Color.Gray)
         Spacer(modifier = Modifier.height(4.dp))
-        Box(
-            modifier = Modifier
-                .size(width = 80.dp, height = 40.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = value, fontWeight = FontWeight.Bold)
+        Row {
+            repeat(1) { // Simple one for now, or just keep the box but make it clickable
+                Box(
+                    modifier = Modifier
+                        .size(width = 80.dp, height = 40.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { 
+                            rating = if (rating >= 5f) 1f else rating + 0.5f
+                            onValueChange(rating)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = rating.toString(), fontWeight = FontWeight.Bold)
+                }
+            }
         }
     }
 }
