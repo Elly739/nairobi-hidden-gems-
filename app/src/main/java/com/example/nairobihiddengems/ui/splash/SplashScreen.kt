@@ -19,6 +19,11 @@ import androidx.compose.ui.unit.sp
 import com.example.nairobihiddengems.core.theme.GreenPied
 import kotlinx.coroutines.delay
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.painterResource
+import com.example.nairobihiddengems.R
+
 @Composable
 fun SplashScreen(onSplashFinished: () -> Unit) {
     LaunchedEffect(Unit) {
@@ -33,18 +38,10 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "Nairobi",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 40.sp
-            )
-            Text(
-                text = "Hidden Gems",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.secondary,
-                fontWeight = FontWeight.Light,
-                fontSize = 32.sp
+            Image(
+                painter = painterResource(id = R.drawable.app_logo),
+                contentDescription = "App Logo",
+                modifier = Modifier.size(250.dp)
             )
             Spacer(modifier = Modifier.height(24.dp))
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)

@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.nairobihiddengems.core.theme.PrimaryPurple
 import com.example.nairobihiddengems.core.theme.SecondaryPink
+import com.example.nairobihiddengems.domain.models.User
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,6 +44,7 @@ fun ProfileScreen(
 
     if (isEditingProfile) {
         var newName by remember { mutableStateOf(user?.displayName ?: "") }
+        var newBio by remember { mutableStateOf(user?.bio ?: "") }
         AlertDialog(
             onDismissRequest = { isEditingProfile = false },
             title = { Text("Edit Profile") },
@@ -55,11 +56,18 @@ fun ProfileScreen(
                         label = { Text("Display Name") },
                         singleLine = true
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newBio,
+                        onValueChange = { newBio = it },
+                        label = { Text("Bio") },
+                        modifier = Modifier.height(100.dp)
+                    )
                 }
             },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.updateDisplayName(newName)
+                    viewModel.updateDisplayName(newName, bio = newBio)
                     isEditingProfile = false
                 }) {
                     Text("Save")
@@ -74,13 +82,26 @@ fun ProfileScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Hero Section
+        // Hero Section (Cover Image)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .background(Brush.verticalGradient(listOf(SecondaryPink, PrimaryPurple)))
         ) {
+            AsyncImage(
+                model = user?.coverImageUrl ?: "https://images.unsplash.com/photo-1542156822-6924d1a71ace?w=800",
+                contentDescription = "Cover Image",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+            
+            // Scrim
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f))))
+            )
+
             // Logout Button
             IconButton(
                 onClick = {
@@ -111,9 +132,14 @@ fun ProfileScreen(
                         .size(100.dp)
                         .clip(CircleShape)
                         .border(4.dp, Color.White, CircleShape)
-                        .background(Color.LightGray)
+                        .background(Color.DarkGray)
                 ) {
-                    Text(text = "🐻", fontSize = 50.sp, modifier = Modifier.align(Alignment.Center))
+                    AsyncImage(
+                        model = user?.profilePicUrl ?: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
                 }
             }
         }
@@ -133,7 +159,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = { isEditingProfile = true }, modifier = Modifier.size(24.dp)) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Edit,
+                        imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
                         modifier = Modifier.size(16.dp),
                         tint = PrimaryPurple
@@ -141,10 +167,28 @@ fun ProfileScreen(
                 }
             }
             Text(
-                text = "Curating Nairobi's aesthetic spots 📍✨ | DM for collabs",
+                text = user?.bio ?: "Nairobi Explorer",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
+                color = Color.Gray,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
+
+            if (user?.isPioneer == true) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    color = PrimaryPurple.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, PrimaryPurple)
+                ) {
+                    Text(
+                        text = "PIONEER EXPLORER",
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        color = PrimaryPurple,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -155,7 +199,7 @@ fun ProfileScreen(
             ) {
                 ProfileStat(dropsCount.toString(), "Drops")
                 ProfileStat(savedCount.toString(), "Saved")
-                ProfileStat("1.2k", "Followers")
+                ProfileStat(user?.followerCount?.toString() ?: "0", "Followers")
             }
 
             Spacer(modifier = Modifier.height(24.dp))

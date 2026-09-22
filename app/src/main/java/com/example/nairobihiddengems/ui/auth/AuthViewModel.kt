@@ -2,8 +2,8 @@ package com.example.nairobihiddengems.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nairobihiddengems.domain.models.User
 import com.example.nairobihiddengems.domain.repository.AuthRepository
-import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,7 @@ class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    val currentUser: StateFlow<FirebaseUser?> = authRepository.currentUser
+    val currentUser: StateFlow<User?> = authRepository.currentUser
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState = _authState.asStateFlow()
@@ -33,10 +33,10 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signUp(email: String, password: String) {
+    fun signUp(email: String, password: String, name: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
-            val result = authRepository.signUp(email, password)
+            val result = authRepository.signUp(email, password, name)
             result.onSuccess {
                 _authState.value = AuthState.Success
             }.onFailure { e ->

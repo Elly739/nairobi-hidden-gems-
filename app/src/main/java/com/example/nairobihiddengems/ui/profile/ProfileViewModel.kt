@@ -2,9 +2,9 @@ package com.example.nairobihiddengems.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nairobihiddengems.domain.models.User
 import com.example.nairobihiddengems.domain.repository.AuthRepository
 import com.example.nairobihiddengems.domain.repository.PlaceRepository
-import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -16,7 +16,7 @@ class ProfileViewModel @Inject constructor(
     private val placeRepository: PlaceRepository
 ) : ViewModel() {
 
-    val user: StateFlow<FirebaseUser?> = authRepository.currentUser
+    val user: StateFlow<User?> = authRepository.currentUser
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val savedCount: StateFlow<Int> = authRepository.currentUser
@@ -38,9 +38,9 @@ class ProfileViewModel @Inject constructor(
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    fun updateDisplayName(name: String) {
+    fun updateDisplayName(name: String, bio: String? = null) {
         viewModelScope.launch {
-            authRepository.updateProfile(name)
+            authRepository.updateProfile(name, bio = bio)
         }
     }
 

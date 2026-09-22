@@ -58,13 +58,6 @@ fun TrendingCard(place: Place, onClick: () -> Unit) {
                     .padding(16.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.LocalFireDepartment,
-                        contentDescription = null,
-                        tint = SecondaryPink,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "${place.saves} saves",
                         color = Color.White,

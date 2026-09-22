@@ -47,7 +47,7 @@ fun SavedScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Saved Gems ✨",
+                text = "Saved Gems",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )

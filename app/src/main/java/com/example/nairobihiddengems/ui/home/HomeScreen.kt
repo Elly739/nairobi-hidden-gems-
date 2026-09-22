@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -45,7 +46,7 @@ fun HomeScreen(
     val isSeeding by viewModel.isSeeding.collectAsStateWithLifecycle()
     val savedPlaceIds by viewModel.savedPlaceIds.collectAsStateWithLifecycle()
 
-    val vibes = listOf("All Vibes", "☕ Cafe", "🌅 Sunset", "📚 Study", "🌙 Night")
+    val vibes = listOf("All Vibes", "Cafe", "Sunset", "Study", "Night")
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -62,7 +63,7 @@ fun HomeScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.Notifications, // Placeholder for Pin icon
+                        imageVector = Icons.Default.LocationOn,
                         contentDescription = null,
                         tint = SecondaryPink
                     )
@@ -83,7 +84,7 @@ fun HomeScreen(
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notifications",
-                        tint = Color.Yellow // As per vision
+                        tint = Color.Yellow
                     )
                 }
             }
@@ -98,7 +99,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Trending Now 🔥",
+                        text = "Trending Now",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
