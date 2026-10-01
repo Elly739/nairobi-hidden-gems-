@@ -78,7 +78,11 @@ fun AppNavGraph(
             )
         }
         composable(Screen.Explore.route) {
-            ExploreScreen()
+            ExploreScreen(
+                onPlaceClick = { placeId ->
+                    navController.navigate("details/$placeId")
+                }
+            )
         }
         composable(Screen.Add.route) {
             AddGemScreen()

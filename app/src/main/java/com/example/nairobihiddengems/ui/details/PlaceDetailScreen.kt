@@ -32,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.filled.StarBorder
 
@@ -62,6 +63,23 @@ fun PlaceDetailScreen(
         }
         val shareIntent = Intent.createChooser(sendIntent, null)
         context.startActivity(shareIntent)
+    }
+
+    fun openDirections(lat: Double?, lng: Double?, name: String, location: String) {
+        val gmmIntentUri = if (lat != null && lng != null) {
+            Uri.parse("geo:$lat,$lng?q=$lat,$lng($name)")
+        } else {
+            Uri.parse("geo:0,0?q=${Uri.encode("$name, $location, Nairobi")}")
+        }
+        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+            setPackage("com.google.android.apps.maps")
+        }
+        try {
+            context.startActivity(mapIntent)
+        } catch (e: Exception) {
+            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=${Uri.encode("$name, $location, Nairobi")}"))
+            context.startActivity(browserIntent)
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
@@ -199,7 +217,7 @@ fun PlaceDetailScreen(
                 // Action Buttons
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Button(
-                        onClick = { },
+                        onClick = { openDirections(currentPlace.latitude, currentPlace.longitude, currentPlace.name, currentPlace.location) },
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),

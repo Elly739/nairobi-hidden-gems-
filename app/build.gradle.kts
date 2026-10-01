@@ -18,6 +18,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["MAPS_API_KEY"] = project.findProperty("MAPS_API_KEY") as? String ?: "YOUR_API_KEY_HERE"
     }
 
     buildTypes {
@@ -56,6 +57,10 @@ dependencies {
     
     // Coil (Image Loading)
     implementation(libs.coil.compose)
+
+    // Google Maps
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
 
     // Firebase
     implementation(platform(libs.firebase.bom))

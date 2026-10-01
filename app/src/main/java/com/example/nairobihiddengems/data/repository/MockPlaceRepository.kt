@@ -75,6 +75,10 @@ class MockPlaceRepository @Inject constructor() : PlaceRepository {
         isSaved: Boolean
     ): Result<Unit> = Result.success(Unit)
 
+    override suspend fun toggleRepost(userId: String, placeId: String, isReposted: Boolean): Result<Unit> = Result.success(Unit)
+
+    override fun getFollowingFeed(followingIds: List<String>): Flow<List<Place>> = flowOf(emptyList())
+
     override suspend fun addPlace(place: Place) {
         // No-op for mock
     }

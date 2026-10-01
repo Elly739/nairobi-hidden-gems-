@@ -41,10 +41,14 @@ fun HomeScreen(
 ) {
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedVibe by viewModel.selectedVibe.collectAsStateWithLifecycle()
+    val feedTab by viewModel.feedTab.collectAsStateWithLifecycle()
     val trendingPlaces by viewModel.trendingPlaces.collectAsStateWithLifecycle()
     val filteredPlaces by viewModel.filteredPlaces.collectAsStateWithLifecycle()
+    val followingPlaces by viewModel.followingPlaces.collectAsStateWithLifecycle()
     val isSeeding by viewModel.isSeeding.collectAsStateWithLifecycle()
     val savedPlaceIds by viewModel.savedPlaceIds.collectAsStateWithLifecycle()
+
+    val displayPlaces = if (feedTab == "Following") followingPlaces else filteredPlaces
 
     val vibes = listOf("All Vibes", "Cafe", "Sunset", "Study", "Night")
 
@@ -133,6 +137,33 @@ fun HomeScreen(
             }
         }
 
+        // Feed Tabs (Discover / Following)
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                listOf("Discover", "Following").forEach { tab ->
+                    val isSelected = feedTab == tab
+                    TextButton(
+                        onClick = { viewModel.onFeedTabSelect(tab) },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = if (isSelected) PrimaryPurple else Color.Gray
+                        )
+                    ) {
+                        Text(
+                            text = tab,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
         // Search Bar
         item {
             OutlinedTextField(
@@ -180,7 +211,7 @@ fun HomeScreen(
         }
 
         // Main Grid
-        if (filteredPlaces.isEmpty()) {
+        if (displayPlaces.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier
@@ -189,14 +220,14 @@ fun HomeScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No gems found for \"$searchQuery\"",
+                        text = if (feedTab == "Following") "No posts from followed explorers yet." else "No gems found for \"$searchQuery\"",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.Gray
                     )
                 }
             }
         } else {
-            items(filteredPlaces.chunked(2)) { rowPlaces ->
+            items(displayPlaces.chunked(2)) { rowPlaces ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

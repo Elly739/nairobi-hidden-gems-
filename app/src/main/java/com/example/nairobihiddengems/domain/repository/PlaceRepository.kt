@@ -15,6 +15,10 @@ interface PlaceRepository {
     fun isPlaceSaved(userId: String, placeId: String): Flow<Boolean>
     suspend fun toggleSavePlace(userId: String, placeId: String, isSaved: Boolean): Result<Unit>
     
+    // Reposts & Feed
+    suspend fun toggleRepost(userId: String, placeId: String, isReposted: Boolean): Result<Unit>
+    fun getFollowingFeed(followingIds: List<String>): Flow<List<Place>>
+
     suspend fun addPlace(place: Place)
     suspend fun uploadPlaceImage(uri: android.net.Uri): Result<String>
 }

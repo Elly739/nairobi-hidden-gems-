@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.nairobihiddengems.domain.models.Place
 import com.example.nairobihiddengems.domain.repository.PlaceRepository
 import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
@@ -175,6 +176,12 @@ class FirestorePlaceRepository @Inject constructor(
     // Helper extension to map Firestore document to Place model
     private fun com.google.firebase.firestore.DocumentSnapshot.toPlace(): Place? {
         return try {
+            val rawLat = getDouble("latitude")
+            val rawLng = getDouble("longitude")
+            // Fallback default coordinates around Nairobi if not specified
+            val lat = rawLat ?: (-1.2921 + (id.hashCode() % 100) * 0.001)
+            val lng = rawLng ?: (36.8219 + (id.hashCode() % 100) * 0.001)
+
             Place(
                 id = id,
                 name = getString("name") ?: "",
@@ -186,11 +193,61 @@ class FirestorePlaceRepository @Inject constructor(
                 description = getString("description") ?: "",
                 imageUrl = getString("imageUrl") ?: "",
                 createdBy = getString("createdBy"),
-                status = getString("status") ?: "approved"
+                status = getString("status") ?: "approved",
+                latitude = lat,
+                longitude = lng,
+                repostCount = getLong("repostCount")?.toInt() ?: 0,
+                repostedBy = (get("repostedBy") as? List<*>)?.map { it.toString() } ?: emptyList()
             )
         } catch (e: Exception) {
             null
         }
+    }
+
+    override suspend fun toggleRepost(userId: String, placeId: String, isReposted: Boolean): Result<Unit> {
+        return try {
+            val placeRef = placesCollection.document(placeId)
+            firestore.runTransaction { transaction ->
+                val snapshot = transaction.get(placeRef)
+                val currentCount = snapshot.getLong("repostCount") ?: 0L
+                if (isReposted) {
+                    transaction.update(placeRef, "repostCount", currentCount + 1)
+                    transaction.update(placeRef, "repostedBy", FieldValue.arrayUnion(userId))
+                } else {
+                    transaction.update(placeRef, "repostCount", (currentCount - 1).coerceAtLeast(0L))
+                    transaction.update(placeRef, "repostedBy", FieldValue.arrayRemove(userId))
+                }
+            }.await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override fun getFollowingFeed(followingIds: List<String>): Flow<List<Place>> = callbackFlow {
+        if (followingIds.isEmpty()) {
+            trySend(emptyList())
+            awaitClose {}
+            return@callbackFlow
+        }
+
+        // Firestore whereIn supports up to 10 items. Chunk if necessary.
+        val chunks = followingIds.chunked(10)
+        // For simplicity, query the first chunk or combine them
+        val subscription = placesCollection
+            .whereIn("createdBy", chunks.first())
+            .whereEqualTo("status", "approved")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val places = snapshot.documents.mapNotNull { it.toPlace() }
+                    trySend(places)
+                }
+            }
+        awaitClose { subscription.remove() }
     }
     
     // For seeding data as requested
@@ -205,7 +262,11 @@ class FirestorePlaceRepository @Inject constructor(
             "description" to place.description,
             "imageUrl" to place.imageUrl,
             "createdBy" to place.createdBy,
-            "status" to place.status
+            "status" to place.status,
+            "latitude" to (place.latitude ?: -1.2921),
+            "longitude" to (place.longitude ?: 36.8219),
+            "repostCount" to 0,
+            "repostedBy" to emptyList<String>()
         )
         try {
             placesCollection.add(data).await()

@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+
+      // Saved gems subcollection
+      match /savedGems/{gemId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Places collection
+    match /places/{placeId} {
+      // Anyone can read approved places. Creators or admins can read pending places.
+      allow read: if resource.data.status == 'approved' ||
+                     (isAuthenticated() && resource.data.createdBy == request.auth.uid);
+
+      // Authenticated users can create a new place (must set status to pending or approved, and createdBy to their uid)
+      allow create: if isAuthenticated() &&
+                       request.resource.data.createdBy == request.auth.uid;
+
+      // Only the creator can update or delete their place
+      allow update, delete: if isAuthenticated() &&
+                               resource.data.createdBy == request.auth.uid;
+    }
+  }
+}

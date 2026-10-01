@@ -7,7 +7,9 @@ import com.example.nairobihiddengems.data.repository.FirestorePlaceRepository
 import com.example.nairobihiddengems.domain.models.Place
 import com.example.nairobihiddengems.domain.repository.PlaceRepository
 import com.example.nairobihiddengems.domain.repository.AuthRepository
+import com.example.nairobihiddengems.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: PlaceRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val TAG = "HomeViewModel"
@@ -26,8 +29,25 @@ class HomeViewModel @Inject constructor(
     private val _selectedVibe = MutableStateFlow("All Vibes")
     val selectedVibe = _selectedVibe.asStateFlow()
 
+    private val _feedTab = MutableStateFlow("Discover") // "Discover" or "Following"
+    val feedTab = _feedTab.asStateFlow()
+
     private val _isSeeding = MutableStateFlow(false)
     val isSeeding = _isSeeding.asStateFlow()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val followingPlaces: StateFlow<List<Place>> = authRepository.currentUser
+        .flatMapLatest { user ->
+            if (user != null) {
+                userRepository.getFollowingIds(user.uid)
+                    .flatMapLatest { followingIds ->
+                        if (followingIds.isEmpty()) flowOf(emptyList())
+                        else repository.getFollowingFeed(followingIds)
+                    }
+            } else {
+                flowOf(emptyList())
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val savedPlaceIds: StateFlow<Set<String>> = authRepository.currentUser
@@ -59,6 +79,10 @@ class HomeViewModel @Inject constructor(
 
     fun onVibeSelect(vibe: String) {
         _selectedVibe.value = vibe
+    }
+
+    fun onFeedTabSelect(tab: String) {
+        _feedTab.value = tab
     }
 
     fun toggleSave(placeId: String) {

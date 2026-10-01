@@ -1,0 +1,30 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Place images bucket folder
+    match /place_images/{allPaths=**} {
+      // Anyone can view place images
+      allow read: if true;
+
+      // Only authenticated users can upload images, max 5MB, must be image/*
+      allow write: if isAuthenticated() &&
+                      request.resource.size < 5 * 1024 * 1024 &&
+                      request.resource.contentType.matches('image/.*');
+    }
+
+    // User profile pictures folder (if applicable)
+    match /profile_images/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() &&
+                      request.auth.uid == userId &&
+                      request.resource.size < 3 * 1024 * 1024 &&
+                      request.resource.contentType.matches('image/.*');
+    }
+  }
+}

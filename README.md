@@ -68,11 +68,12 @@ nairobihiddengems/
    - Open in Android Studio (Ladybug or newer).
    - Sync Gradle and deploy to a physical device (API 24+).
 
-## Roadmap
-- [ ] **Google Maps:** Direct integration for "Get Directions" and map-view exploration.
-- [ ] **Social Features:** Comments, photo reviews, and following other gem hunters.
-- [ ] **Reposts:** Allow users to share other hunters' gems to their own profile feed.
+## Roadmap & Sprint 3 Hardening
+- [x] **Firebase Security Rules:** Production-grade [firestore.rules](file:///C:/Users/Okatho/AndroidStudioProjects/NairobiHiddenGems/firestore.rules) and [storage.rules](file:///C:/Users/Okatho/AndroidStudioProjects/NairobiHiddenGems/storage.rules) protecting user data, place submissions, and image uploads.
+- [ ] **User Profiles & Social Features:** Following other gem hunters, comments, photo reviews, and reposts.
+- [ ] **Notifications:** Alerts for new drops from followed explorers.
 - [ ] **Offline Cache:** Support for browsing saved gems without an active connection.
+- [ ] **🗺️ Maps & Navigation (Future Update):** Interactive Nairobi map, location-based discovery, map markers, and turn-by-turn Google Maps integration.
 
 ---
 *Created by Elly739 - Discover the Vibe of Nairobi.*
