@@ -79,6 +79,8 @@ class MockPlaceRepository @Inject constructor() : PlaceRepository {
 
     override fun getFollowingFeed(followingIds: List<String>): Flow<List<Place>> = flowOf(emptyList())
 
+    override fun getRepostedPlaces(userId: String): Flow<List<Place>> = flowOf(emptyList())
+
     override suspend fun addPlace(place: Place) {
         // No-op for mock
     }

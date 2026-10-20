@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.nairobihiddengems.core.theme.PrimaryPurple
 import com.example.nairobihiddengems.core.theme.SecondaryPink
-import com.example.nairobihiddengems.domain.models.User
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,36 +37,74 @@ fun ProfileScreen(
     val user by viewModel.user.collectAsStateWithLifecycle()
     val savedCount by viewModel.savedCount.collectAsStateWithLifecycle()
     val dropsCount by viewModel.dropsCount.collectAsStateWithLifecycle()
+    val repostsCount by viewModel.repostsCount.collectAsStateWithLifecycle()
+
+    val savedPlaces by viewModel.savedPlaces.collectAsStateWithLifecycle()
+    val postedPlaces by viewModel.postedPlaces.collectAsStateWithLifecycle()
+    val repostedPlaces by viewModel.repostedPlaces.collectAsStateWithLifecycle()
 
     var selectedTab by remember { mutableStateOf("Posted") }
     var isEditingProfile by remember { mutableStateOf(false) }
 
+    val currentPlaces = when (selectedTab) {
+        "Posted" -> postedPlaces
+        "Saved" -> savedPlaces
+        "Reposts" -> repostedPlaces
+        else -> postedPlaces
+    }
+
     if (isEditingProfile) {
         var newName by remember { mutableStateOf(user?.displayName ?: "") }
         var newBio by remember { mutableStateOf(user?.bio ?: "") }
+        var newProfilePic by remember { mutableStateOf(user?.profilePicUrl ?: "") }
+        var newCoverPic by remember { mutableStateOf(user?.coverImageUrl ?: "") }
+
         AlertDialog(
             onDismissRequest = { isEditingProfile = false },
             title = { Text("Edit Profile") },
             text = {
-                Column {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     OutlinedTextField(
                         value = newName,
                         onValueChange = { newName = it },
                         label = { Text("Display Name") },
-                        singleLine = true
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = newBio,
                         onValueChange = { newBio = it },
                         label = { Text("Bio") },
-                        modifier = Modifier.height(100.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 3
+                    )
+                    OutlinedTextField(
+                        value = newProfilePic,
+                        onValueChange = { newProfilePic = it },
+                        label = { Text("Profile Picture URL") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = newCoverPic,
+                        onValueChange = { newCoverPic = it },
+                        label = { Text("Cover Image URL") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.updateDisplayName(newName, bio = newBio)
+                    viewModel.updateProfile(
+                        name = newName,
+                        bio = newBio.ifBlank { null },
+                        profilePicUrl = newProfilePic.ifBlank { null },
+                        coverImageUrl = newCoverPic.ifBlank { null }
+                    )
                     isEditingProfile = false
                 }) {
                     Text("Save")
@@ -199,7 +236,7 @@ fun ProfileScreen(
             ) {
                 ProfileStat(dropsCount.toString(), "Drops")
                 ProfileStat(savedCount.toString(), "Saved")
-                ProfileStat(user?.followerCount?.toString() ?: "0", "Followers")
+                ProfileStat(repostsCount.toString(), "Reposts")
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -214,27 +251,68 @@ fun ProfileScreen(
             ) {
                 TabButton("Posted", selectedTab == "Posted", Modifier.weight(1f)) { selectedTab = "Posted" }
                 TabButton("Saved", selectedTab == "Saved", Modifier.weight(1f)) { selectedTab = "Saved" }
-                TabButton("Reset", false, Modifier.weight(1f)) { }
+                TabButton("Reposts", selectedTab == "Reposts", Modifier.weight(1f)) { selectedTab = "Reposts" }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Content Grid (Mock)
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 100.dp)
-            ) {
-                items(List(4) { it }) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+            // Content Grid
+            if (currentPlaces.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No $selectedTab gems yet.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
                     )
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 100.dp)
+                ) {
+                    items(currentPlaces) { place ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            AsyncImage(
+                                model = place.imageUrl,
+                                contentDescription = place.name,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
+                                            startY = 100f
+                                        )
+                                    )
+                            )
+                            Text(
+                                text = place.name,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(8.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -18,6 +18,7 @@ interface PlaceRepository {
     // Reposts & Feed
     suspend fun toggleRepost(userId: String, placeId: String, isReposted: Boolean): Result<Unit>
     fun getFollowingFeed(followingIds: List<String>): Flow<List<Place>>
+    fun getRepostedPlaces(userId: String): Flow<List<Place>>
 
     suspend fun addPlace(place: Place)
     suspend fun uploadPlaceImage(uri: android.net.Uri): Result<String>

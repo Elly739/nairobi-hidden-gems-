@@ -120,8 +120,8 @@ fun CustomBottomBar(
         // Floating Action Button
         Box(
             modifier = Modifier
-                .size(64.dp)
-                .offset(y = (-32).dp)
+                .size(52.dp)
+                .offset(y = (-26).dp)
                 .clip(CircleShape)
                 .background(
                     Brush.linearGradient(
@@ -143,7 +143,7 @@ fun CustomBottomBar(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add",
                 tint = Color.White,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
     }

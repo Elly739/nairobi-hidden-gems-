@@ -249,6 +249,22 @@ class FirestorePlaceRepository @Inject constructor(
             }
         awaitClose { subscription.remove() }
     }
+
+    override fun getRepostedPlaces(userId: String): Flow<List<Place>> = callbackFlow {
+        val subscription = placesCollection
+            .whereArrayContains("repostedBy", userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val places = snapshot.documents.mapNotNull { it.toPlace() }
+                    trySend(places)
+                }
+            }
+        awaitClose { subscription.remove() }
+    }
     
     // For seeding data as requested
     override suspend fun addPlace(place: Place) {
