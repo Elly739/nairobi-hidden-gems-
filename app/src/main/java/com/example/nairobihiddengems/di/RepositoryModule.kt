@@ -9,6 +9,8 @@ import com.example.nairobihiddengems.domain.repository.PlaceRepository
 import com.example.nairobihiddengems.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
+import com.google.firebase.firestore.persistentCacheSettings
 import com.google.firebase.storage.FirebaseStorage
 import dagger.Binds
 import dagger.Module
@@ -46,7 +48,15 @@ abstract class RepositoryModule {
 
         @Provides
         @Singleton
-        fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+        fun provideFirebaseFirestore(): FirebaseFirestore {
+            val firestore = FirebaseFirestore.getInstance()
+            firestore.firestoreSettings = firestoreSettings {
+                setLocalCacheSettings(persistentCacheSettings {
+                    setSizeBytes(com.google.firebase.firestore.FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED)
+                })
+            }
+            return firestore
+        }
 
         @Provides
         @Singleton
