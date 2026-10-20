@@ -4,9 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -120,57 +119,52 @@ fun ProfileScreen(
         )
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Hero Section (Cover Image)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-        ) {
-            AsyncImage(
-                model = user?.coverImageUrl ?: "https://images.unsplash.com/photo-1542156822-6924d1a71ace?w=800",
-                contentDescription = "Cover Image",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            
-            // Scrim
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 100.dp)
+    ) {
+        // Hero Section (Cover Image & Profile Pic)
+        item {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f))))
-            )
-
-            // Logout Button
-            IconButton(
-                onClick = {
-                    viewModel.signOut()
-                    onLogout()
-                },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 48.dp, end = 16.dp)
-                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                    .fillMaxWidth()
+                    .height(200.dp)
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Logout,
-                    contentDescription = "Logout",
-                    tint = Color.White
+                AsyncImage(
+                    model = user?.coverImageUrl ?: "https://images.unsplash.com/photo-1542156822-6924d1a71ace?w=800",
+                    contentDescription = "Cover Image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom
-            ) {
                 Box(
                     modifier = Modifier
+                        .fillMaxSize()
+                        .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f))))
+                )
+                IconButton(
+                    onClick = {
+                        viewModel.signOut()
+                        onLogout()
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 48.dp, end = 16.dp)
+                        .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = "Logout",
+                        tint = Color.White
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .offset(y = 50.dp)
                         .size(100.dp)
                         .clip(CircleShape)
-                        .border(4.dp, Color.White, CircleShape)
+                        .border(4.dp, MaterialTheme.colorScheme.background, CircleShape)
                         .background(Color.DarkGray)
                 ) {
                     AsyncImage(
@@ -181,85 +175,91 @@ fun ProfileScreen(
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(60.dp))
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = if (user?.displayName.isNullOrBlank()) "@${user?.email?.substringBefore("@") ?: "nairobigemhunter"}" else user?.displayName ?: "",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(onClick = { isEditingProfile = true }, modifier = Modifier.size(24.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
-                        modifier = Modifier.size(16.dp),
-                        tint = PrimaryPurple
-                    )
-                }
-            }
-            Text(
-                text = user?.bio ?: "Nairobi Explorer",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-
-            if (user?.isPioneer == true) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Surface(
-                    color = PrimaryPurple.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(16.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, PrimaryPurple)
-                ) {
-                    Text(
-                        text = "PIONEER EXPLORER",
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        color = PrimaryPurple,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Stats row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                ProfileStat(dropsCount.toString(), "Drops")
-                ProfileStat(savedCount.toString(), "Saved")
-                ProfileStat(repostsCount.toString(), "Reposts")
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Tabs
-            Row(
+        // Profile Info & Stats
+        item {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TabButton("Posted", selectedTab == "Posted", Modifier.weight(1f)) { selectedTab = "Posted" }
-                TabButton("Saved", selectedTab == "Saved", Modifier.weight(1f)) { selectedTab = "Saved" }
-                TabButton("Reposts", selectedTab == "Reposts", Modifier.weight(1f)) { selectedTab = "Reposts" }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = if (user?.displayName.isNullOrBlank()) "@${user?.email?.substringBefore("@") ?: "nairobigemhunter"}" else user?.displayName ?: "",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(onClick = { isEditingProfile = true }, modifier = Modifier.size(24.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            modifier = Modifier.size(16.dp),
+                            tint = PrimaryPurple
+                        )
+                    }
+                }
+                Text(
+                    text = user?.bio ?: "Nairobi Explorer",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+
+                if (user?.isPioneer == true) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Surface(
+                        color = PrimaryPurple.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, PrimaryPurple)
+                    ) {
+                        Text(
+                            text = "PIONEER EXPLORER",
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                            color = PrimaryPurple,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Stats row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    ProfileStat(dropsCount.toString(), "Drops")
+                    ProfileStat(savedCount.toString(), "Saved")
+                    ProfileStat(repostsCount.toString(), "Reposts")
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Tabs
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TabButton("Posted", selectedTab == "Posted", Modifier.weight(1f)) { selectedTab = "Posted" }
+                    TabButton("Saved", selectedTab == "Saved", Modifier.weight(1f)) { selectedTab = "Saved" }
+                    TabButton("Reposts", selectedTab == "Reposts", Modifier.weight(1f)) { selectedTab = "Reposts" }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Content Grid
-            if (currentPlaces.isEmpty()) {
+        // Content Grid Items
+        if (currentPlaces.isEmpty()) {
+            item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -272,18 +272,19 @@ fun ProfileScreen(
                         color = Color.Gray
                     )
                 }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = 100.dp)
+            }
+        } else {
+            items(currentPlaces.chunked(2)) { rowPlaces ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(currentPlaces) { place ->
+                    rowPlaces.forEach { place ->
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .weight(1f)
                                 .aspectRatio(1f)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -315,6 +316,9 @@ fun ProfileScreen(
                                     .padding(8.dp)
                             )
                         }
+                    }
+                    if (rowPlaces.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
