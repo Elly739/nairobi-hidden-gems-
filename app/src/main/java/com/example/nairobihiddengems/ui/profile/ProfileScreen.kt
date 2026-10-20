@@ -2,6 +2,7 @@ package com.example.nairobihiddengems.ui.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -32,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
+    onPlaceClick: (String) -> Unit = {},
     onLogout: () -> Unit
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
@@ -285,6 +287,7 @@ fun ProfileScreen(
                                 .aspectRatio(1f)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable { onPlaceClick(place.id) }
                         ) {
                             AsyncImage(
                                 model = place.imageUrl,

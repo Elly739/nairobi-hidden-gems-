@@ -92,6 +92,9 @@ fun AppNavGraph(
         }
         composable(Screen.Profile.route) {
             ProfileScreen(
+                onPlaceClick = { placeId ->
+                    navController.navigate("details/$placeId")
+                },
                 onLogout = {
                     authViewModel.signOut()
                     navController.navigate(Screen.Login.route) {
