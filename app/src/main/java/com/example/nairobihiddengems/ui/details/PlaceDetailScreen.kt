@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -45,6 +46,7 @@ fun PlaceDetailScreen(
     val context = LocalContext.current
     val place by viewModel.place.collectAsStateWithLifecycle()
     val isSaved by viewModel.isSaved.collectAsStateWithLifecycle()
+    val isReposted by viewModel.isReposted.collectAsStateWithLifecycle()
 
     if (place == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -226,7 +228,20 @@ fun PlaceDetailScreen(
                     ) {
                         Text("Get Directions", fontWeight = FontWeight.Bold)
                     }
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
+                    OutlinedButton(
+                        onClick = { viewModel.toggleRepost() },
+                        modifier = Modifier.size(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Repeat,
+                            contentDescription = "Repost",
+                            tint = if (isReposted) SecondaryPink else PrimaryPurple
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
                     OutlinedButton(
                         onClick = { sharePlace(currentPlace.name, currentPlace.location) },
                         modifier = Modifier.size(56.dp),

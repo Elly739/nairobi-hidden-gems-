@@ -33,11 +33,28 @@ class PlaceDetailViewModel @Inject constructor(
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val isReposted: StateFlow<Boolean> = authRepository.currentUser.combine(place) { user, currentPlace ->
+        if (user != null && currentPlace != null) {
+            currentPlace.repostedBy.contains(user.uid)
+        } else {
+            false
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     fun toggleSave() {
         val user = authRepository.currentUser.value ?: return
         val currentSaved = isSaved.value
         viewModelScope.launch {
             repository.toggleSavePlace(user.uid, placeId, !currentSaved)
+        }
+    }
+
+    fun toggleRepost() {
+        val user = authRepository.currentUser.value ?: return
+        val currentPlace = place.value ?: return
+        val reposted = currentPlace.repostedBy.contains(user.uid)
+        viewModelScope.launch {
+            repository.toggleRepost(user.uid, placeId, !reposted)
         }
     }
 }
